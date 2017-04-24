@@ -1,0 +1,160 @@
+{% load staticfiles %}
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+
+    <!-- MaxCDN: Bootstrap 3 CSS -->
+    <script src="{% static 'js/jquery.min.js' %}"></script>
+    <script src="{% static 'js/moment.js' %}"></script>
+    <script src="{% static 'js/bootstrap.min.js' %}"></script>
+    <script src="{% static 'js/bootstrap-datepicker.js' %}"></script>
+
+    <!--  <script src="{% static 'js/bootstrap-datepicker.ru.min.js' %}"></script>-->
+    <script src="https://code.highcharts.com/highcharts.src.js"></script>
+    <script src="https://code.highcharts.com/modules/exporting.js"></script>
+    <link rel="stylesheet" href="{% static 'css/bootstrap.css' %}">
+    <link rel="stylesheet" href="{% static 'css/bootstrap-datepicker3.css' %}">
+
+
+</head>
+<body>
+<div class="container">
+    <div class="jumbotron">
+        <h1>Анализ новостей в социальной сети <a href="vk.com">Вконтакте</a></h1>
+        <h4>
+            <form class="form-inline text-right" action="" method="POST">
+                {% csrf_token %}
+                <div class="form-group">
+                    <blockquote class="blockquote-reverse">
+                        <label for="days">Период</label>
+                        <select class="form-control" id="days" name="days">
+                            <option value="3">Три дня</option>
+                            <option value="7">Неделя</option>
+                            <option value="14">Две недели</option>
+                            <option value="30">30 дней</option>
+                            <option value="360">Год</option>
+                        </select>
+                        <input class="form-control" type="text" name="text" placeholder="Новость для поиска. . ."
+                               required {% if text %}value="{{ text }}"{% endif %}>
+                        <input type="submit" class="btn btn-primary" value="Отправить">
+                        <p></p>
+                        <footer>Каждый день обрабатывается ~1 сек.</footer>
+                    </blockquote>
+                </div>
+            </form>
+        </h4>
+
+    </div>
+
+    <script>
+        $('#datepicker1').datepicker({
+            format: 'dd-mm-yyyy',
+            language: "ru",
+            endDate: '+0d',
+        });
+    </script>
+    <div class="">
+        {% if 0 %}
+            <h3> Было найдено постов: {{ posts_counts }}</h3>
+            {% for item in news %}
+                <hr>
+                Лайков - {{ item.likes.count }}, комментариев - {{ item.comments.count }} reposts -
+                {{ item.reposts.count }}
+
+            {% endfor %}
+        {% endif %}
+    </div>
+
+    {% if data %}
+        <div class="" id="container"></div>
+
+        <script>
+            Highcharts.setOptions({
+                lang: {
+                    loading: 'Загрузка...',
+                    months: ['Январь', 'Февраль', 'Март', 'Апрель', 'Май', 'Июнь', 'Июль', 'Август', 'Сентябрь', 'Октябрь', 'Ноябрь', 'Декабрь'],
+                    weekdays: ['Воскресенье', 'Понедельник', 'Вторник', 'Среда', 'Четверг', 'Пятница', 'Суббота'],
+                    shortMonths: ['Янв', 'Фев', 'Март', 'Апр', 'Май', 'Июнь', 'Июль', 'Авг', 'Сент', 'Окт', 'Нояб', 'Дек'],
+                    exportButtonTitle: "Экспорт",
+                    printButtonTitle: "Печать",
+                    rangeSelectorFrom: "С",
+                    rangeSelectorTo: "По",
+                    rangeSelectorZoom: "Период",
+                    downloadPNG: 'Скачать PNG',
+                    downloadJPEG: 'Скачать JPEG',
+                    downloadPDF: 'Скачать PDF',
+                    downloadSVG: 'Скачать SVG',
+                    printChart: 'Напечатать график'
+                }
+            })
+            Highcharts.chart('container', {
+
+                title: {
+                    text: 'Популярность искомой новости в Вконтакте'
+                },
+
+                subtitle: {
+                    text: 'Статистика учитывает только первые 1000 записей за каждый день.'
+                },
+
+                xAxis: {
+                    type: 'datetime',
+                    dateTimeLabelFormats: {},
+                    title: {
+                        text: 'Дата'
+                    }
+                },
+                yAxis: {
+                    title: {
+                        text: 'Количество (шт)'
+                    },
+                    min: 0
+                },
+                tooltip: {
+                    headerFormat: '<b>{series.name}</b><br>',
+                    pointFormat: '{point.x:%d %b }: {point.y:df} шт'
+                },
+                legend: {
+                    layout: 'vertical',
+                    align: 'right',
+                    verticalAlign: 'middle'
+                },
+
+                plotOptions: {
+                    series: {
+                        pointStart: 2010
+                    }
+                },
+
+                series: [{
+                    name: 'Лайки',
+                    data: [{% for item in data.likes %}
+                        [{{ item.0 }}, {{ item.1 }}],
+                    {% endfor %}]
+                }, {
+                    name: 'Репосты',
+                    data: [{% for item in data.reposts %}
+                        [{{ item.0 }}, {{ item.1 }}],
+                    {% endfor %}]
+                }, {
+                    name: 'Комментарии',
+                    data: [{% for item in data.comments %}
+                        [{{ item.0 }}, {{ item.1 }}],
+                    {% endfor %}]
+                }, {
+                    name: 'Записи',
+                    data: [{% for item in data.posts %}
+                        [{{ item.0 }}, {{ item.1 }}],
+                    {% endfor %}]
+                }]
+
+            });
+        </script>
+    {% endif %}
+</div>
+
+</body>
+</html>
