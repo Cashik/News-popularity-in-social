@@ -4,5 +4,5 @@ from django.conf.urls import url, include
 from Social import views
 
 urlpatterns = [
-    url(r'', view=views.index, name='index'),
+    url(r'^$', view=views.index, name='index'),
 ]
